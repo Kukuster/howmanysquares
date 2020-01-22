@@ -1,0 +1,60 @@
+version: "3"
+services: 
+    compile_gcc920:
+        build: ./containers/compile/gcc920/
+        volumes: 
+            - ./volumes/source/hellomagick_cpp:/usr/src/howmanysquares/hellomagick_cpp
+            - ./volumes/hmsbin:/usr/src/howmanysquares/hmsbin/
+        environment:
+            - TEST_ENV_VAR=built_by_gcc920
+        #ports:
+        #    - "15000:5000"
+        #expose:
+        #    - "8080"
+    compile_gcc920_debug:
+        build: ./containers/compile/gcc920_debug/
+        volumes: 
+            - ./volumes/source/hellomagick_cpp:/usr/src/howmanysquares/hellomagick_cpp
+            - ./volumes/hmsbin:/usr/src/howmanysquares/hmsbin/
+        environment:
+            - TEST_ENV_VAR=built_by_gcc920_in_debug_mode
+    compile_ubuntu1804clang:
+        build: ./containers/compile/ubuntu1804clang/
+        volumes: 
+            - ./volumes/source/hellomagick_cpp:/usr/src/howmanysquares/hellomagick_cpp
+            - ./volumes/hmsbin:/usr/src/howmanysquares/hmsbin/
+        environment:
+            - TEST_ENV_VAR=built_by_clang
+    compile_ubuntu1804clang_debug:
+        build: ./containers/compile/ubuntu1804clang_debug/
+        volumes: 
+            - ./volumes/source/hellomagick_cpp:/usr/src/howmanysquares/hellomagick_cpp
+            - ./volumes/hmsbin:/usr/src/howmanysquares/hmsbin/
+        environment:
+            - TEST_ENV_VAR=built_by_clang_in_debug_mode
+
+
+    testrun_ubuntu1804:
+        build: ./containers/test/testrun_ubuntu1804/
+        volumes: 
+            - ./volumes/hmsbin:/usr/src/howmanysquares/hmsbin/
+            - ./volumes/input:/usr/src/howmanysquares/input/
+            - ./volumes/output:/usr/src/howmanysquares/output/
+        environment:
+            - TEST_ENV_VAR=runs_on_ubuntu1804
+            - HMSBIN_INPUT=/usr/src/howmanysquares/input
+            - HMSBIN_OUTPUT=/usr/src/howmanysquares/output
+
+    test1_ubuntu1804:
+        build: ./containers/test/testrun_ubuntu1804/
+        volumes: 
+            - ./volumes/hmsbin:/usr/src/howmanysquares/hmsbin/
+        environment:
+            - TEST_ENV_VAR=runs_on_ubuntu1804
+
+
+volumes:
+    hellomagick_cpp:
+    hmsbin:
+    input:
+    output:
