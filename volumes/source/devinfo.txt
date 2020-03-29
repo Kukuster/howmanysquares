@@ -1,0 +1,7 @@
+Documenting C++ Code
+https://developer.lsst.io/cpp/api-docs.html
+
+
+Image convolution in C++ + Gaussian blur
+Low quality, has drawbacks, and likely bugs
+https://gist.github.com/OmarAflak/aca9d0dc8d583ff5a5dc16ca5cdda86a

@@ -1,8 +1,11 @@
 # howmanysquares
 
+This program is being developed under Docker and is meant to run under Docker. If you want to use a different environment for compilation and execution, use Dockerfiles as a guide to how to set up your environment.
 
 
 ### frequently used and useful commands:
+
+ `docker-compose run --rm compile_gcc920 && docker-compose run --rm testrun_ubuntu1804`
 
  `bash testrun.sh`
  

@@ -20,3 +20,6 @@
 volumes/hmsbin/showsquares
 volumes/input/51*
 volumes/output/51*
+
+**/testimage*
+**/*.log
