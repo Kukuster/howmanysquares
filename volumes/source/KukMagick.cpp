@@ -22,9 +22,11 @@ using namespace KukMagick;
  *  f.e.: 0,1,2,3,4,5,6,7,8 are indices left to right & top to bottom in a 3x3 kernel
  *  required to be a natural number or a zero
  * 
- * @return offset indices in square kernel relative to the central element
+ * @xy (pointer to an array[2]) are x and y offset indices in square kernel relative to the central element
  *  f.e. 0th, 4th and 7th elements in 3x3 kernel have offsets (-1,-1), (0,0) and (0,1) respectively
  *  @x and @y values have to be a whole number spanning [-kernel_order, kernel_order]
+ * 
+ * @return @xy, pointer to an array[2], the values are changed in the function and the pointer is returned
  * 
  */
 signed short int* KukMagick::offset_values(unsigned short int kernel_size,
@@ -34,14 +36,8 @@ signed short int* KukMagick::offset_values(unsigned short int kernel_size,
 {
     signed short int res = kernel_index % kernel_size;
 
-    //static signed short int xy[2];
-
     xy[0] = (signed short int)(res - kernel_order);
     xy[1] = (signed short int)( ((kernel_index - res) / kernel_size) - kernel_order );
-
-    // static signed short int xy[2] =
-    // {  (signed short int) ( x - kernel_order ),
-    //    (signed short int) ( ((kernel_index - x) / kernel_size) - kernel_order )  };
 
     return xy;
 }
@@ -122,54 +118,63 @@ double  KukMagick::round_to_decpoint(double number, int precision){
 
 
 
+std::string KukMagick::f2str(float number){
 
-//std::string KukMagick::timestamp;
-//KukMagick::HMSBIN_INPUT = getenv("HMSBIN_INPUT"), KukMagick::HMSBIN_OUTPUT = getenv("HMSBIN_OUTPUT");
+    std::string str{std::to_string(number)};
+    int offset{1};
+    if (str.find_last_not_of('0') == str.find('.')) {
+        offset = 0;
+    }
+    str.erase(str.find_last_not_of('0') + offset, std::string::npos);
+    return str;
 
+    // //leaves trailing dot if whole
+    // std::string str = std::to_string(number);
+    // str.erase(str.find_last_not_of('0') + 1, std::string::npos);
+    // return str;
+}
 
-// class KukStopwatch
-// {
-//     private:
-//         std::chrono::_V2::system_clock::time_point start;
-//         std::time_t start_time;
-//         std::string start_date_time;
+std::string KukMagick::f2str(double number){
+  
+    std::string str{std::to_string(number)};
+    int offset{1};
+    if (str.find_last_not_of('0') == str.find('.')) {
+        offset = 0;
+    }
+    str.erase(str.find_last_not_of('0') + offset, std::string::npos);
+    return str;
 
-//         std::chrono::_V2::system_clock::time_point split;
-//         std::chrono::duration<double> elapsed_seconds;
-
-//         std::chrono::_V2::system_clock::time_point end;
-//         std::time_t end_time;
-
-//     public:
-//         std::string timestamp(std::time_t time);
-
-//         void start(std::string text = "");
-//         void split(std::string text = "split at %ss\n");
-//         void end(std::string text = "execution time: %ss\n");
-
-// };
-
-
+    // //leaves trailing dot if whole
+    // std::string str = std::to_string(number);
+    // str.erase(str.find_last_not_of('0') + 1, std::string::npos);
+    // return str;
+}
 
 
 // ===== class KukStopwatch ===== //
 
+KukMagick::KukStopwatch::KukStopwatch()
+{
+}
+
+std::chrono::_V2::system_clock::time_point KukMagick::KukStopwatch::getStart_timepoint()
+{
+    return this->start_timepoint;
+};
+
 std::string KukMagick::KukStopwatch::getStart_timestamp(){
     return this->start_timestamp;
 };
-// void KukMagick::KukStopwatch::setStart_timestamp(){
-//     this->start_timestamp = std::to_string(this->start_time);
-// };
-
-// // std::chrono::_V2::system_clock::time_point start = std::chrono::system_clock::now();
-// auto start = std::chrono::system_clock::now();
-// std::time_t start_time = std::chrono::system_clock::to_time_t(start);
-// std::string date_time = std::ctime(&start_time);
-// KukMagick::timestamp = std::to_string(start_time);
-
 
 std::string KukMagick::KukStopwatch::timestamp(std::time_t time){
     return std::to_string(time);
+}
+
+void KukMagick::KukStopwatch::set(std::chrono::_V2::system_clock::time_point start_timepoint){
+  this->start_timepoint = start_timepoint;
+  this->start_time = std::chrono::system_clock::to_time_t(this->start_timepoint);
+  this->start_date_time = std::ctime(&(this->start_time));
+  this->start_timestamp = std::to_string(this->start_time);
 }
 
 void KukMagick::KukStopwatch::start(const char * text){
@@ -212,41 +217,30 @@ void KukMagick::KukStopwatch::end(const char * text){
             // std::time_t end_time;
 
 
-// class KukMagician
-// {
-//     private:
-
-//     /* not very */ private:
-//         std::string timestamp;
-//         std::string HMSBIN_INPUT, HMSBIN_OUTPUT;
-//         KukStopwatch stopwatch;
-
-//     public:
-//         std::string getTimestamp();
-//         void        setTimestamp();
-
-//         std::string getHMSBIN_INPUT();
-//         void        setHMSBIN_INPUT();
-
-//         std::string getHMSBIN_OUTPUT();
-//         void        setHMSBIN_OUTPUT();
-
-//         KukStopwatch* stopwatch();
-//         void stopwatch();
-
-//         void initInputs();
-
-//         std::ofstream kuklog(std::string name = "");
-//         //void kuklog(std::string text);
-//         //void kuklog(char* text);
-
-// };
 
 // ===== class KukMagician ===== //
 
 KukMagician::KukMagician(){
-  
+    try{
+        HMSBIN_INPUT =      getenv("HMSBIN_INPUT");
+        HMSBIN_OUTPUT =     getenv("HMSBIN_OUTPUT");
+        this->setHMSBIN_INPUT  ( HMSBIN_INPUT  );
+        this->setHMSBIN_OUTPUT ( HMSBIN_OUTPUT );
+    }
+    catch (...){
+        std::cout << "Invalid environment variables HMSBIN_INPUT and HMSBIN_OUTPUT. They have to be defined as a file system path to a directory";
+        throw 1;
+    }
+
+    this->stopwatch.start();
+    
+    this->timepoint = this->stopwatch.getStart_timepoint();
+    this->timestamp = this->stopwatch.getStart_timestamp();
+    //std::string start_timestamp = this->stopwatch.getStart_timestamp();
+    //this->setTimestamp(start_timestamp);
+
 }
+
 
 std::string KukMagick::KukMagician::getHMSBIN_INPUT(){
   return this->HMSBIN_INPUT;
@@ -282,15 +276,6 @@ void KukMagick::KukMagician::setTimestamp(char * timestamp){
   this->timestamp = std::string(timestamp);
 }
 
-// KukStopwatch KukMagick::KukMagician::getStopwatch(){
-//   return this->stopwatch;
-// }
-
-// void KukMagick::KukMagician::setStopwatch(){
-//   KukStopwatch * newstopwatch;
-//   this->stopwatch = *newstopwatch;
-// }
-
 
 
 
@@ -311,9 +296,6 @@ std::ofstream KukMagick::KukMagician::kuklog(std::string name)
 
 // ===== Blur filters ===== //
 
-// void KukMagick::Image(){
-//     Image();
-// }
 
 void KukMagick::Image::evenBlur3x3(){
     this->convolve(3, kernel_evenblur3x3);
@@ -348,185 +330,7 @@ void KukMagick::Image::gaussianBlur7x7_1_2_4_8(){
 }
 
 
-/*
 
-void KukMagick::Image::smartBlur(){
-
-    this->evenBlur3x3();
-    this->gaussianBlur5x5();
-
-    KukMagick::Image RGB_RedChannel(*this);
-    KukMagick::Image RGB_GreenChannel(*this);
-    KukMagick::Image RGB_BlueChannel(*this);
-
-
-    const Magick::Image *image(this);
-    const unsigned long image_columns = (long) image->columns();
-
-    KukMagick::Image *convolve_image(this);
-    //convolve_image = this;
-
-    if (convolve_image == (Image *)NULL)
-        return;
-    //convolve_image->storage_class = DirectClass;
-    //(this);
-    
-    long y, width;
-    MagickPassFail status;
-
-    for (y=0; y < (long) convolve_image->rows; y++)
-      {
-        const Magick::PixelPacket
-          *__restrict__ p;
-
-        Magick::PixelPacket
-          *__restrict__ q;
-
-        long
-          x;
-
-        MagickBool
-          thread_status;
-
-        thread_status=status;
-        if (thread_status == MagickFail)
-          continue;
-
-        ///*
-        //  Acquire rectangle of columns+width high, and width tall.
-        //
-        //size_t columns = 196; size_t rows = 162; 
-        //Pixels view(*convolve_image);
-        //MagickLib::PixelPacket *pixels = view.get(38, 36, columns, rows);
-
-        p=AcquireImagePixels(image,-width/2,y-width/2,image->columns+width,width,
-                             exception);
-        ///*
-        //  Set one row.
-        //
-        q=SetImagePixelsEx(convolve_image,0,y,convolve_image->columns,1,exception);
-        if ((p == (const PixelPacket *) NULL) || (q == (PixelPacket *) NULL))
-          thread_status=MagickFail;
-
-        if (thread_status != MagickFail)
-          {
-            for (x=0; x < (long) convolve_image->columns; x++)
-              {
-                float_packet_t
-                  pixel;
-
-
-                const PixelPacket
-                  * restrict r;
-
-                long
-                  u,
-                  v;
-
-                const float_quantum_t
-                  * restrict k;
-
-                r=p;
-                pixel=zero;
-                k=normal_kernel;
-                if (is_grayscale && !matte)
-                  {
-                    ///* G /
-                    for (v=0; v < width; v++)
-                      {
-                        for (u=0; u < width; u++)
-                          pixel.red+=k[u]*r[u].red;
-                        k+= width;
-                        r+=image->columns+width;
-                      }
-                    q->red=q->green=q->blue=RoundFloatQuantumToIntQuantum(pixel.red);
-                    q->opacity=OpaqueOpacity;
-                  }
-                else if (!matte)
-                  {
-                    ///* RGB /
-                    for (v=0; v < width; v++)
-                      {
-                        for (u=0; u < width; u++)
-                          {
-                            pixel.red+=k[u]*r[u].red;
-                            pixel.green+=k[u]*r[u].green;
-                            pixel.blue+=k[u]*r[u].blue;
-                          }
-                        k+=width;
-                        r+=image->columns+width;
-                      }
-                    q->red=RoundFloatQuantumToIntQuantum(pixel.red);
-                    q->green=RoundFloatQuantumToIntQuantum(pixel.green);
-                    q->blue=RoundFloatQuantumToIntQuantum(pixel.blue);
-                    q->opacity=OpaqueOpacity;
-                  }
-                else
-                  {
-                    ///* RGBA /
-                    for (v=0; v < width; v++)
-                      {
-                        for (u=0; u < width; u++)
-                          {
-                            pixel.red+=k[u]*r[u].red;
-                            pixel.green+=k[u]*r[u].green;
-                            pixel.blue+=k[u]*r[u].blue;
-                            pixel.opacity+=k[u]*r[u].opacity;
-                          }
-                        k+=width;
-                        r+=image->columns+width;
-                      }
-                    q->red=RoundFloatQuantumToIntQuantum(pixel.red);
-                    q->green=RoundFloatQuantumToIntQuantum(pixel.green);
-                    q->blue=RoundFloatQuantumToIntQuantum(pixel.blue);
-                    q->opacity=RoundFloatQuantumToIntQuantum(pixel.opacity);
-                  }
-                p++;
-                q++;
-              }
-            if (!SyncImagePixelsEx(convolve_image,exception))
-              thread_status=MagickFail;
-          }
-
-        if (monitor_active)
-          {
-            unsigned long
-              thread_row_count;
-
-#if defined(HAVE_OPENMP)
-#  pragma omp atomic
-#endif
-            row_count++;
-#if defined(HAVE_OPENMP)
-#  pragma omp flush (row_count)
-#endif
-            thread_row_count=row_count;
-            if (QuantumTick(thread_row_count,image->rows))
-              if (!MagickMonitorFormatted(thread_row_count,image->rows,exception,
-                                          ConvolveImageText,
-                                          convolve_image->filename,
-                                          order))
-                thread_status=MagickFail;
-          }
-
-        if (thread_status == MagickFail)
-          {
-            status=MagickFail;
-#if defined(HAVE_OPENMP)
-#  pragma omp flush (status)
-#endif
-          }
-      }
-
-  
-
-
-
-
-    *this = RGB_RedChannel;
-
-}
-//*/
 
 void KukMagick::Image::kukConvolve(Magick::Image * read_image,
                                    Magick::Image * writable_copy_image,
@@ -534,12 +338,14 @@ void KukMagick::Image::kukConvolve(Magick::Image * read_image,
                                    const double * kernel,
                                    const double kernel_sum)
 {
-  KukMagician Magician;
-  std::ofstream logfile = Magician.kuklog("KukMagick");
-  logfile << "hello from KukMagick::Image::kukConvolve()\n";
+    KukMagician Magician;
+    KukStopwatch Stopwatch;
+    std::ofstream logfile = Magician.kuklog("Convolve");
+    //logfile   << "hello from KukMagick::Image::kukConvolve()\n";
+    std::ofstream logfile2 = Magician.kuklog("log2");
 
-  const unsigned short int kernel_count = kernel_size * kernel_size - 1;
-  const unsigned short int kernel_order = (kernel_size - 1) / 2;
+    const unsigned short int kernel_count = kernel_size * kernel_size - 1;
+    const unsigned short int kernel_order = (kernel_size - 1) / 2;
 
 
     Pixels view(*read_image);
@@ -560,6 +366,35 @@ void KukMagick::Image::kukConvolve(Magick::Image * read_image,
 
     signed long int convolve_red, convolve_green, convolve_blue;
 
+    logfile << "============================================================\n";
+    logfile << "=----------------------------------------------------------=\n";
+    logfile << "=----------- looping through central pixels.... -----------=\n";
+    logfile << "=----------------------------------------------------------=\n";
+    logfile << "============================================================\n";
+    logfile << "\n";
+
+    const int max_x_length = (std::to_string(total_x-1)).length();
+    const int max_y_length = (std::to_string(total_y-1)).length();
+    const int max_i_length = max_x_length+max_y_length;
+    std::string *sx;
+    std::string *sy;
+    std::string *zi;
+    const int spaces_before_kernel = 20 + max_i_length + max_y_length + max_x_length;
+    const int spaces_kernel_shift = 2;
+    const std::string sbk(spaces_before_kernel, ' ');
+    const std::string sks(spaces_kernel_shift,  ' ');
+    std::string logstr;
+
+    int spaces_kernelsum = f2str(kernel_sum).length();
+    int spaces_for_kernelsum = 12;
+    int spaces_after_kernelsum = spaces_for_kernelsum - spaces_kernelsum;
+    //int spaces_kernelsum = f2str(kernel_sum_).length();
+    std::string *sk;
+    std::string *sak;
+
+    Stopwatch.start();
+    // Loop through pixels, where the full kernel fits.
+    // leaves a `kernel_order`-wide "frame" of pixels unprocessed 
     for (y = kernel_order; y < total_y-kernel_order ; ++y){
         for (x = kernel_order; x < total_x-kernel_order; ++x){
 
@@ -579,6 +414,25 @@ void KukMagick::Image::kukConvolve(Magick::Image * read_image,
 
             }
 
+            //std::cout << "x=" << x << ", std::to_string(x).length() = " << std::to_string(x).length();
+            //std::cout << "y=" << y << ", std::to_string(y).length() = " << std::to_string(y).length();
+            //std::cout << "pixel_index=" << pixel_index << ", std::to_string(pixel_index).length() = " << std::to_string(pixel_index).length();
+            sx = new std::string(max_x_length - std::to_string(x).length(), ' ');
+            sy = new std::string(max_y_length - std::to_string(y).length(), ' ');
+            zi = new std::string(max_i_length - std::to_string(pixel_index).length(), '0');
+
+            //logfile << KukMagick::format("#%s%s [%s%s, %s%s]  kernel_sum = %s",
+            //                            &zi,pixel_index, x,&sx, y,&sy, kernel_sum);
+            
+            logstr  = std::string("#")+
+                      *zi+
+                      std::to_string(pixel_index)+
+                      " ["+*sx+std::to_string(x)+
+                      ", "+*sy+std::to_string(y)+"] "+
+                      "kernel_sum = "+f2str(kernel_sum);
+
+            logfile << logstr << "\n";
+
             (*(pixels_write+pixel_index)).red   = (unsigned short) abs((convolve_red   / kernel_sum));
             (*(pixels_write+pixel_index)).green = (unsigned short) abs((convolve_green / kernel_sum));
             (*(pixels_write+pixel_index)).blue  = (unsigned short) abs((convolve_blue  / kernel_sum));
@@ -587,6 +441,292 @@ void KukMagick::Image::kukConvolve(Magick::Image * read_image,
 
         } // for x
     } // for y
+    Stopwatch.end("loop through central pixels done in %ss\n");
+
+    logfile << "\n\n\n\n\n\n\n\n\n";
+    logfile << "============================================================\n";
+    logfile << "=----------------------------------------------------------=\n";
+    logfile << "=------------ looping through frame pixels.... ------------=\n";
+    logfile << "=----------------------------------------------------------=\n";
+    logfile << "============================================================\n";
+    logfile << "\n";
+
+    //if (true){
+    double kernel_sum_;
+
+    logfile << "------------------------------------------------------------\n";
+    logfile << "------------ Top and bottom parts (and corners) ------------\n";
+    logfile << "------------------------------------------------------------\n";
+    Stopwatch.start();
+    int ker_el_length[kernel_count+1];
+    for (i = 0; i < kernel_count+1; ++i){
+        ker_el_length[i] = static_cast<int>(f2str(kernel[i]).length());   // !!! casting size_t to int !!!
+    }
+    const int * kerlenmax = std::max_element(ker_el_length, ker_el_length+kernel_count+1);
+    logfile << "kerlenmax = " << *kerlenmax << "\n\n";
+
+    std::string kerelem;
+    std::string *spaces;
+
+    //const double * kermax = std::max_element(kernel, kernel+kernel_count+1);
+
+
+    // Top and bottom parts of the "frame", including corners
+    // { y = [0, kernel_order) ⋃ [total_y-kernel_order, total_y) }
+    //  ×
+    // { x = [0, total_x) }
+    // 
+    for (y = 0; y < total_y; ++y){
+        if (y == kernel_order) { y = total_y-kernel_order; }
+
+        for (x = 0; x < total_x; ++x){
+            
+            kernel_sum_ = 0;
+            convolve_red = 0, convolve_green = 0, convolve_blue = 0;
+            pixel_index = y*total_x + x;
+
+            for (i=0; i<=kernel_count; i++){ // i < const kernel_count
+
+                // rewrites xy_offsets
+                offset_values(kernel_size, kernel_order, i, xy_offsets);
+
+                if (
+                x+xy_offsets[0] >= 0 && x+xy_offsets[0] < total_x
+                &&
+                y+xy_offsets[1] >= 0 && y+xy_offsets[1] < total_y){
+
+                    offset_pixel_index = pixel_index + xy_offsets[1]*total_x + xy_offsets[0];
+
+                    convolve_red    += (*(pixels_read+offset_pixel_index)).red   * kernel[i];
+                    convolve_green  += (*(pixels_read+offset_pixel_index)).green * kernel[i];
+                    convolve_blue   += (*(pixels_read+offset_pixel_index)).blue  * kernel[i];
+
+                    kernel_sum_ += kernel[i];
+                }
+
+            } // for i
+
+            logstr = "";
+            bool logfile2cond = (y == 385 && (x == 0 || x == 1 || x == 2)) ||
+                                (y == 0 && (x == 385));
+            if(logfile2cond){
+                zi = new std::string(max_i_length - std::to_string(pixel_index).length(), '0');
+                logfile2 << "\n#" + *zi + std::to_string(pixel_index) + " \n";
+            }
+
+            for (i=0; i<=kernel_count; i++){ // log
+                // rewrites xy_offsets
+                offset_values(kernel_size, kernel_order, i, xy_offsets);
+                
+                if (
+                x+xy_offsets[0] >= 0 && x+xy_offsets[0] < total_x
+                &&
+                y+xy_offsets[1] >= 0 && y+xy_offsets[1] < total_y){
+                    kerelem = f2str(kernel[i]);
+                } else {
+                    kerelem = "~";
+                }
+
+                spaces_kernelsum = f2str(kernel_sum_).length();
+                spaces_after_kernelsum = spaces_for_kernelsum - spaces_kernelsum;
+                sk  = new std::string(spaces_kernelsum,       ' ');
+                sak = new std::string(spaces_after_kernelsum, ' ');
+                
+                if (i == kernel_size*kernel_order){ // when on the first element of the middle row
+                    sx = new std::string(max_x_length - std::to_string(x).length(), ' ');
+                    sy = new std::string(max_y_length - std::to_string(y).length(), ' ');
+                    zi = new std::string(max_i_length - std::to_string(pixel_index).length(), '0');
+
+                    logstr += "\n"+
+                              std::string("#")+
+                              *zi+
+                              std::to_string(pixel_index)+
+                              " ["+*sx+std::to_string(x)+
+                              ", "+*sy+std::to_string(y)+"] "+
+                              "kernel_sum = "+f2str(kernel_sum_)+
+                              *sak;
+                    
+                    logstr += sks+" |";
+                    
+                    if (logfile2cond){
+                      logfile2 << "|sbk|="+std::to_string(sbk.length())+" |sks|="+std::to_string(sks.length())
+                               << " kernel_sum_="+f2str(kernel_sum_)
+                               << " spaces_kernelsum="+std::to_string(spaces_kernelsum)
+                               << " |sk|=" +std::to_string((*sk).length())
+                               << " |sak|=" +std::to_string((*sak).length())
+                               << " |#zi+pixel_index+sx+x+sy+y+kernel_sum|="+
+                               std::to_string(
+                                   ("\n"+
+                                   std::string("#")+
+                                   *zi+
+                                   std::to_string(pixel_index)+
+                                   " ["+*sx+std::to_string(x)+
+                                   ", "+*sy+std::to_string(y)+"] "+
+                                   "kernel_sum = "+f2str(kernel_sum_)+
+                                   sks).length())
+                               << "\n";
+                    }
+
+                } else if (i%kernel_size==0){ // when on the first element of a row
+                    logstr += "\n" + sbk + *sk + *sak + sks + " |";
+
+                    if (logfile2cond){
+                      logfile2 << "|sbk|=" + std::to_string(sbk.length()) + " |sks|=" + std::to_string(sks.length())
+                               << " kernel_sum_=" + f2str(kernel_sum_)
+                               << " spaces_kernelsum=" + std::to_string(spaces_kernelsum)
+                               << " |sk|=" + std::to_string((*sk).length())
+                               << " |sak|=" + std::to_string((*sak).length())
+                               << " |sbk+sk+sks|=" +
+                                      std::to_string(("\n" + sbk + *sk + sks).length())
+                               << "\n";
+                    }
+
+                }
+
+                //if (xy_offsets[0] == 0 && xy_offsets[1] == 0){
+                //    kerelem = "[" + kerelem + "]";
+                //} else {
+                //    kerelem = " " + kerelem + " ";
+                //}
+
+                spaces = new std::string(*kerlenmax - kerelem.length(), ' ');
+                logstr += *spaces + kerelem;
+
+                if (i%kernel_size==kernel_size-1){ // when on the last element of a row
+                    logstr += "|";
+                } else {
+                    logstr += ", ";
+                }
+
+            } // for i (log)
+
+            logstr += "\n";
+            logfile << logstr;
+
+            (*(pixels_write+pixel_index)).red   = (unsigned short) abs((convolve_red   / kernel_sum_));
+            (*(pixels_write+pixel_index)).green = (unsigned short) abs((convolve_green / kernel_sum_));
+            (*(pixels_write+pixel_index)).blue  = (unsigned short) abs((convolve_blue  / kernel_sum_));
+
+            view_convolve.sync();
+            
+        } // for x
+    } // for y
+
+    logfile << "\n\n\n";
+    logfile << "------------------------------------------------------------\n";
+    logfile << "------------------- Left and right parts -------------------\n";
+    logfile << "------------------------------------------------------------\n";
+    logfile << "\n";
+
+    // Left and right parts of the "frame"
+    // { y = [kernel_order, total_y-kernel_order) }
+    //  ×
+    // { x = [0, kernel_order) ⋃ [total_x-kernel_order, total_x] }
+    //
+    for (x = 0; x < total_x; ++x){
+        if (x == kernel_order) { x = total_x-kernel_order; }
+
+        for (y = kernel_order; y < total_y-kernel_order; ++y){
+
+            kernel_sum_ = 0;
+            convolve_red = 0, convolve_green = 0, convolve_blue = 0;
+            pixel_index = y*total_x + x;
+
+            for (i=0; i<=kernel_count; i++){ // i < const kernel_count
+
+                // rewrites xy_offsets
+                offset_values(kernel_size, kernel_order, i, xy_offsets);
+
+                if (
+                x+xy_offsets[0] >= 0 && x+xy_offsets[0] < total_x
+                &&
+                y+xy_offsets[1] >= 0 && y+xy_offsets[1] < total_y){
+
+                    offset_pixel_index = pixel_index + xy_offsets[1]*total_x + xy_offsets[0];
+
+                    convolve_red    += (*(pixels_read+offset_pixel_index)).red   * kernel[i];
+                    convolve_green  += (*(pixels_read+offset_pixel_index)).green * kernel[i];
+                    convolve_blue   += (*(pixels_read+offset_pixel_index)).blue  * kernel[i];
+
+                    kernel_sum_ += kernel[i];
+                }
+
+            } // for i
+
+            logstr = "";
+
+            for (i=0; i<=kernel_count; i++){ // log
+                // rewrites xy_offsets
+                offset_values(kernel_size, kernel_order, i, xy_offsets);
+                
+                if (
+                x+xy_offsets[0] >= 0 && x+xy_offsets[0] < total_x
+                &&
+                y+xy_offsets[1] >= 0 && y+xy_offsets[1] < total_y){
+                    kerelem = f2str(kernel[i]);
+                } else {
+                    kerelem = "~";
+                }
+
+                spaces_kernelsum = f2str(kernel_sum_).length();
+                spaces_after_kernelsum = spaces_for_kernelsum - spaces_kernelsum;
+                sk  = new std::string(spaces_kernelsum,       ' ');
+                sak = new std::string(spaces_after_kernelsum, ' ');
+                
+                if (i == kernel_size*kernel_order){ // when on the first element of the middle row
+                    sx = new std::string(max_x_length - std::to_string(x).length(), ' ');
+                    sy = new std::string(max_y_length - std::to_string(y).length(), ' ');
+                    zi = new std::string(max_i_length - std::to_string(pixel_index).length(), '0');
+
+                    logstr += "\n"+
+                              std::string("#")+
+                              *zi+
+                              std::to_string(pixel_index)+
+                              " ["+*sx+std::to_string(x)+
+                              ", "+*sy+std::to_string(y)+"] "+
+                              "kernel_sum = "+f2str(kernel_sum_)+
+                              *sak;
+                    
+                    logstr += sks+" |";
+
+                } else if (i%kernel_size==0){ // when on the first element of a row
+                    logstr += "\n" + sbk + *sk + *sak + sks + " |";
+
+                }
+
+                spaces = new std::string(*kerlenmax - kerelem.length(), ' ');
+                logstr += *spaces + kerelem;
+
+                if (i%kernel_size==kernel_size-1){ // when on the last element of a row
+                    logstr += "|";
+                } else {
+                    logstr += ", ";
+                }
+
+            } // for i (log)
+
+            logstr += "\n";
+            logfile << logstr;
+
+            (*(pixels_write+pixel_index)).red   = (unsigned short) abs((convolve_red   / kernel_sum_));
+            (*(pixels_write+pixel_index)).green = (unsigned short) abs((convolve_green / kernel_sum_));
+            (*(pixels_write+pixel_index)).blue  = (unsigned short) abs((convolve_blue  / kernel_sum_));
+
+            view_convolve.sync();
+
+
+        } // for y
+    } // for x
+
+    Stopwatch.end("loop through  frame  pixels done in %ss\n");
+
+
+
+    //} // if true/false
+
+
+
+
 
 
     return void();
@@ -649,368 +789,6 @@ void KukMagick::Image::laplacianEdges5x5(){
     this->convolve(5, kernel_laplacian_5x5);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                                                             %
-%                                                                             %
-%     C o n v o l v e I m a g e                                               %
-%                                                                             %
-%                                                                             %
-%                                                                             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%  ConvolveImage() applies a custom convolution kernel to the image.
-%
-%  The format of the ConvolveImage method is:
-%
-%      Image *ConvolveImage(const Image *image,const unsigned int order,
-%        const double *kernel,ExceptionInfo *exception)
-%
-%  A description of each parameter follows:
-%
-%    o image: The image.
-%
-%    o order: The number of columns and rows in the filter kernel.
-%
-%    o kernel: An array of double representing the convolution kernel.
-%
-%    o exception: Return any errors or warnings in this structure.
-%
-%
-*/
-/*
-#define ConvolveImageText "[%s] Convolve: order %u..."
-MagickExport Magick::Image *ConvolveImage(const Magick::Image *__restrict__ image,const unsigned int order,
-                                  const double *__restrict__ kernel,MagickLib::ExceptionInfo *exception)
-{
-#if QuantumDepth < 32
-  typedef float float_quantum_t;
-  typedef MagickLib::FloatPixelPacket float_packet_t;
-#  define RoundFloatQuantumToIntQuantum(value) RoundFloatToQuantum(value)
-#else
-  typedef double float_quantum_t;
-  typedef DoublePixelPacket float_packet_t;
-#  define RoundFloatQuantumToIntQuantum(value) RoundDoubleToQuantum(value)
-#endif
-
-  float_quantum_t
-    *__restrict__ normal_kernel;
-
-  Magick::Image
-    *convolve_image;
-
-  long
-    width,
-    y;
-
-  MagickPassFail
-    status;
-
-  const MagickBool
-    is_grayscale = image->is_grayscale;
-
-  const MagickBool
-    matte=((image->matte) || (image->colorspace == CMYKColorspace));
-
-  ///*
-    // Initialize convolve image attributes.
-  //
-  assert(image != (Magick::Image *) NULL);
-  assert(image->signature == MagickSignature);
-  assert(exception != (MagickLib::ExceptionInfo *) NULL);
-  assert(exception->signature == MagickSignature);
-  width=(long) order;
-  if ((width % 2) == 0)
-    Magick::ThrowImageException3(OptionError,UnableToConvolveImage,
-                         KernelWidthMustBeAnOddNumber);
-  if (((long) image->columns < width) || ((long) image->rows < width))
-    ThrowImageException3(OptionError,UnableToConvolveImage,
-                         ImageSmallerThanKernelWidth);
-  convolve_image=CloneImage(image,image->columns,image->rows,MagickTrue,exception);
-  if (convolve_image == (Image *) NULL)
-    return((Image *) NULL);
-  convolve_image->storage_class=DirectClass;
-  {
-    //*
-    //   Build normalized kernel.
-
-    //   0x0.25 --> 3x3
-    //   0x0.5  --> 5x5
-    //   0x1    --> 9x9
-    //   0x2    --> 17x17
-    //   0x3    --> 25x25
-    //   0x4    --> 33x33
-    //   0x5    --> 41x41
-    //   0x6    --> 49x49
-    //
-    double
-      normalize;
-
-    register long
-      i;
-
-    normal_kernel=MagickAllocateAlignedMemory(float_quantum_t *,
-                                              MAGICK_CACHE_LINE_SIZE,
-                                              width*width*sizeof(float_quantum_t));
-    if (normal_kernel == (float_quantum_t *) NULL)
-      {
-        DestroyImage(convolve_image);
-        ThrowImageException(ResourceLimitError,MemoryAllocationFailed,
-                            MagickMsg(OptionError,UnableToConvolveImage));
-      }
-    normalize=0.0;
-    for (i=0; i < (width*width); i++)
-      normalize+=kernel[i];
-    if (AbsoluteValue(normalize) <= MagickEpsilon)
-      normalize=1.0;
-    normalize=1.0/normalize;
-    for (i=0; i < (width*width); i++)
-      {
-        normal_kernel[i]=normalize*kernel[i];
-      }
-  }
-
-  if (LogMagickEvent(TransformEvent,GetMagickModule(),
-                     "  ConvolveImage with %ldx%ld kernel:",width,width))
-    {
-      ///*
-      //  Log convolution matrix.
-      //
-      char
-        cell_text[MaxTextExtent],
-        row_text[MaxTextExtent];
-
-      const double
-        *k;
-
-      long
-        u,
-        v;
-
-      k=kernel;
-      for (v=0; v < width; v++)
-        {
-          *row_text='\0';
-          for (u=0; u < width; u++)
-            {
-              FormatString(cell_text,"%#12.4g",*k++);
-              (void) strlcat(row_text,cell_text,sizeof(row_text));
-              if (u%5 == 4)
-                {
-                  (void) LogMagickEvent(TransformEvent,GetMagickModule(),
-                                        "   %.64s", row_text);
-                  *row_text='\0';
-                }
-            }
-          if (u > 5)
-            (void) strlcat(row_text,"\n",sizeof(row_text));
-          if (row_text[0] != '\0')
-            (void) LogMagickEvent(TransformEvent,GetMagickModule(),
-                                  "   %s", row_text);
-        }
-    }
-
-  status=MagickPass;
-  ///*
-  //  Convolve image.
-  //
-  {
-    unsigned long
-      row_count=0;
-
-    MagickBool
-      monitor_active;
-
-    float_packet_t
-      zero;
-
-    (void) memset(&zero,0,sizeof(float_packet_t));
-
-    monitor_active=MagickMonitorActive();
-
-#if defined(HAVE_OPENMP)
-#  if defined(TUNE_OPENMP)
-#    pragma omp parallel for schedule(runtime) shared(row_count, status)
-#  else
-#    if defined(USE_STATIC_SCHEDULING_ONLY)
-#      pragma omp parallel for schedule(static,4) shared(row_count, status)
-#    else
-#      pragma omp parallel for schedule(guided) shared(row_count, status)
-#    endif
-#  endif
-#endif
-    for (y=0; y < (long) convolve_image->rows; y++)
-      {
-        const Magick::PixelPacket
-          *__restrict__ p;
-
-        Magick::PixelPacket
-          *__restrict__ q;
-
-        long
-          x;
-
-        MagickBool
-          thread_status;
-
-        thread_status=status;
-        if (thread_status == MagickFail)
-          continue;
-
-        ///*
-        //  Acquire rectangle of columns+width high, and width tall.
-        //
-        p=AcquireImagePixels(image,-width/2,y-width/2,image->columns+width,width,
-                             exception);
-        ///*
-        //  Set one row.
-        //
-        q=SetImagePixelsEx(convolve_image,0,y,convolve_image->columns,1,exception);
-        if ((p == (const PixelPacket *) NULL) || (q == (PixelPacket *) NULL))
-          thread_status=MagickFail;
-
-        if (thread_status != MagickFail)
-          {
-            for (x=0; x < (long) convolve_image->columns; x++)
-              {
-                float_packet_t
-                  pixel;
-
-
-                const PixelPacket
-                  * restrict r;
-
-                long
-                  u,
-                  v;
-
-                const float_quantum_t
-                  * restrict k;
-
-                r=p;
-                pixel=zero;
-                k=normal_kernel;
-                if (is_grayscale && !matte)
-                  {
-                    ///* G /
-                    for (v=0; v < width; v++)
-                      {
-                        for (u=0; u < width; u++)
-                          pixel.red+=k[u]*r[u].red;
-                        k+= width;
-                        r+=image->columns+width;
-                      }
-                    q->red=q->green=q->blue=RoundFloatQuantumToIntQuantum(pixel.red);
-                    q->opacity=OpaqueOpacity;
-                  }
-                else if (!matte)
-                  {
-                    ///* RGB /
-                    for (v=0; v < width; v++)
-                      {
-                        for (u=0; u < width; u++)
-                          {
-                            pixel.red+=k[u]*r[u].red;
-                            pixel.green+=k[u]*r[u].green;
-                            pixel.blue+=k[u]*r[u].blue;
-                          }
-                        k+=width;
-                        r+=image->columns+width;
-                      }
-                    q->red=RoundFloatQuantumToIntQuantum(pixel.red);
-                    q->green=RoundFloatQuantumToIntQuantum(pixel.green);
-                    q->blue=RoundFloatQuantumToIntQuantum(pixel.blue);
-                    q->opacity=OpaqueOpacity;
-                  }
-                else
-                  {
-                    ///* RGBA /
-                    for (v=0; v < width; v++)
-                      {
-                        for (u=0; u < width; u++)
-                          {
-                            pixel.red+=k[u]*r[u].red;
-                            pixel.green+=k[u]*r[u].green;
-                            pixel.blue+=k[u]*r[u].blue;
-                            pixel.opacity+=k[u]*r[u].opacity;
-                          }
-                        k+=width;
-                        r+=image->columns+width;
-                      }
-                    q->red=RoundFloatQuantumToIntQuantum(pixel.red);
-                    q->green=RoundFloatQuantumToIntQuantum(pixel.green);
-                    q->blue=RoundFloatQuantumToIntQuantum(pixel.blue);
-                    q->opacity=RoundFloatQuantumToIntQuantum(pixel.opacity);
-                  }
-                p++;
-                q++;
-              }
-            if (!SyncImagePixelsEx(convolve_image,exception))
-              thread_status=MagickFail;
-          }
-
-        if (monitor_active)
-          {
-            unsigned long
-              thread_row_count;
-
-#if defined(HAVE_OPENMP)
-#  pragma omp atomic
-#endif
-            row_count++;
-#if defined(HAVE_OPENMP)
-#  pragma omp flush (row_count)
-#endif
-            thread_row_count=row_count;
-            if (QuantumTick(thread_row_count,image->rows))
-              if (!MagickMonitorFormatted(thread_row_count,image->rows,exception,
-                                          ConvolveImageText,
-                                          convolve_image->filename,
-                                          order))
-                thread_status=MagickFail;
-          }
-
-        if (thread_status == MagickFail)
-          {
-            status=MagickFail;
-#if defined(HAVE_OPENMP)
-#  pragma omp flush (status)
-#endif
-          }
-      }
-  }
-  MagickFreeAlignedMemory(normal_kernel);
-  if (MagickFail == status)
-    {
-      DestroyImage(convolve_image);
-      convolve_image=(Image *) NULL;
-    }
-  else
-    {
-      convolve_image->is_grayscale=is_grayscale;
-    }
-  return(convolve_image);
-}
-
-
-
-
-//*/
 
 
 

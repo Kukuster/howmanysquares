@@ -21,5 +21,7 @@ volumes/hmsbin/showsquares
 volumes/input/51*
 volumes/output/51*
 
+volumes/source/dev_junk.cpp
+
 **/testimage*
 **/*.log

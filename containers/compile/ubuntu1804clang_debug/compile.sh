@@ -10,6 +10,6 @@ magickkeys=`GraphicsMagick++-config --cppflags --cxxflags --ldflags --libs`
 
 TIMEFORMAT='compilation time: %3Rs'
 time {
-    clang++ -g -o $output $source $magickkeys
+    clang++ -v -g -o $output $source $magickkeys
  }
 

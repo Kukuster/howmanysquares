@@ -71,8 +71,8 @@ Sounds like not very good deal, but lets try anyway...
 
 
 === Plan E ===
-- get fucking kuklog work in KukMagick
-- get KukMagick::Image::kukConvolve() work
+V - get fucking kuklog work in KukMagick
+V - get KukMagick::Image::kukConvolve() work
 - try different values of kernel_sum to make kukConvolve() work with laplacian edges. Ask how is convolve normalized on GraphicsMagick forum.
 - If figured out how to edge detection manially properly, do smartBlur in one iteration through pixels
 - try to do my square detection from this
@@ -82,6 +82,10 @@ Sounds like not very good deal, but lets try anyway...
 At least, it compiles now. But now outputs some Magick++ runtime "segmentation" error.
 First I have to verify kuklog works in all scopes, then try to fix that Magick++ error.
 
+
+--- 2020.04.04
+kukConvolve() works like a charm with blurs. Also the log is cool.
+Now putting the code in order, particularly the KukMagick library.
 
 
 

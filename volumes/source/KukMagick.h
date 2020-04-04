@@ -18,8 +18,10 @@ namespace KukMagick {
 
     class KukStopwatch
     {
+        public:
+            KukStopwatch();
+
         private:
-            std::chrono::_V2::system_clock::time_point start_timepoint;
             std::time_t start_time;
             std::string start_date_time;
 
@@ -30,13 +32,16 @@ namespace KukMagick {
             std::time_t end_time;
 
         /* not very */ private:
-            std::string start_timestamp;
+            std::chrono::_V2::system_clock::time_point  start_timepoint;
+            std::string                                 start_timestamp;
 
         public:
             std::string timestamp(std::time_t time);
-            
-            std::string getStart_timestamp();
 
+            std::chrono::_V2::system_clock::time_point  getStart_timepoint();
+            std::string                                 getStart_timestamp();
+
+            void set    (std::chrono::_V2::system_clock::time_point start_timepoint);
             void start  (const char *text = "");
             void split  (const char *text = "split at %ss\n");
             void end    (const char *text = "execution time: %ss\n");
@@ -52,6 +57,7 @@ namespace KukMagick {
         private:
 
         /* not very */ private:
+            std::chrono::_V2::system_clock::time_point timepoint;
             std::string timestamp;
             std::string HMSBIN_INPUT, HMSBIN_OUTPUT;
             //std::unordered_map<std::string, std::string> VAR;
@@ -139,6 +145,9 @@ namespace KukMagick {
 
     float   round_to_decpoint( float number, int precision);
     double  round_to_decpoint(double number, int precision);
+
+    std::string f2str(double number);
+    std::string f2str(float  number);
 
 
     class Image: public Magick::Image

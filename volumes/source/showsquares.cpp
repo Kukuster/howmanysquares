@@ -184,26 +184,32 @@ int main(int argc, char const *argv[], char *env[]){
     Magick::Image squaresImage_convolve_copy;
     squaresImage_convolve_copy.read(HMSBIN_INPUT + "/51.jpg");
 
-    const unsigned short int kernel_size = 3;
+    const unsigned short int kernel_size = 5;
     const unsigned short int kernel_count = kernel_size*kernel_size - 1;
     const unsigned short int kernel_order = (kernel_size-1)/2;
 
     logfile << "kernel_size = " << kernel_size << ", " << "kernel_count = " << kernel_count << ", " << "kernel_order = " << kernel_order << "\n";
 
+    // const double kernel[9] = {
+    //      1,  2,  1,
+    //      2,  4,  2,
+    //      1,  2,  1,
+    // };
     const double kernel[9] = {
-         1,  2,  1,
-         2,  4,  2,
-         1,  2,  1,
+         0, -1,  0,
+        -1,  5, -1,
+         0, -1,  0,
     };
-    //const double kernel_sum = 8; // sum of abs value of all values divided by 2
-    const double kernel_sum = 16;
+    //const double kernel_sum = 16;
+    ////const double kernel_sum = 8; // sum of abs value of all values divided by 2
+    const double kernel_sum = 256;
 
-    squaresImage.kukConvolve(&squaresImage_convolve_copy, &squaresImage_convolve, kernel_size, kernel, kernel_sum);
+    squaresImage.kukConvolve(&squaresImage_convolve_copy, &squaresImage_convolve, kernel_size, kernel_gaussianblur5x5, kernel_sum);
 
     //squaresImage.gaussianBlur3x3();
     //squaresImage.write(HMSBIN_OUTPUT + "/51_" + timestamp + "_" + "original" + "_" + "gaussianBlur3x3" + ".jpg");
 
-    squaresImage_convolve.write(HMSBIN_OUTPUT + "/51_" + start_timestamp + "_" + "original" + "_" + "kukConvolve" + ".jpg");
+    squaresImage_convolve.write(HMSBIN_OUTPUT + "/51_" + start_timestamp + "_" + "original" + "_" + "kukConvolve_gaussianblur5x5" + ".jpg");
 
     //
 
