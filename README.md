@@ -1,6 +1,11 @@
 # howmanysquares
 
-This program is being developed under Docker and is meant to run under Docker. If you want to use a different environment for compilation and execution, use Dockerfiles as a guide to how to set up your environment.
+Goal: write a deterministic algorithm that counts how many squares are in a given image, e.g.:
+![51](https://github.com/Kukuster/howmanysquares/assets/12045236/9c4542a7-a08a-4209-b603-9c90223fd2ec)
+(answer here is 51)
+
+
+Run under Docker, or use Dockerfiles as a guide to how to set up your environment.
 
 
 ### frequently used and useful commands:
